@@ -15,7 +15,7 @@ This project is based on source code of Minecraft Consoles (SMART CMD)
 - cheat codes
 - a stripped down survival crafting menu
 
-## coming soon:
+## Coming soon:
 - improved Lighting 
 - Beta World Generation
 - More fun things :D
