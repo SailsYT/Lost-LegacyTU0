@@ -1,10 +1,9 @@
-Project Lost Legacy - Bringing TU19 Down to Beta 1.6 via Downporting
+# Minecraft: Lost Legacy 
+Recreating the feel of Beta 1.6.6 with extra additions and fun features
 
 This project is based on source code of Minecraft Consoles (SMART CMD)
 
-The current goal of Project Lost Legacy is to bring back the feel of Beta 1.6.6 by downporting TU19.
-
-Currently these are the features changed:
+## Additions, Removals and Changes!
 - no sprinting, XP or Hunger (needs rework)
 - hit to shear (thanks to [str1k3r](https://github.com/S1l3ntStr1ke87))
 - a Creative mode 
@@ -16,14 +15,18 @@ Currently these are the features changed:
 - cheat codes
 - a stripped down survival crafting menu
 
-Known Issues:
+## coming soon:
+- improved Lighting 
+- Beta World Generation
+- More fun things :D
+
+## Known Bugs:
 - world can be resized after creation
 - JUST DONT USE BOTTLES OF ENCHANTING PLS (the effects are weird)
 - Fishing rods float a lil bit
 - Map Texture doesn't show
 
-I'll be working on more updates often, so stay tuned :D
-
-FIND ME ON DISCORD: @sailsyt
-Join the LCE Center: https://discord.gg/hzjd6VsWS9
-Check out Legacy News Network: https://www.youtube.com/@LegacyNewsNetwork
+## Socials:
+- FIND ME ON DISCORD: @sailsyt
+- Join the LCE Center: https://discord.gg/hzjd6VsWS9
+- Check out Legacy News Network: https://www.youtube.com/@LegacyNewsNetwork
