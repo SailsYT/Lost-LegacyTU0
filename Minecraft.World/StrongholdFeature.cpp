@@ -18,17 +18,11 @@ void StrongholdFeature::staticCtor()
 {
 	allowedBiomes.push_back(Biome::desert);
 	allowedBiomes.push_back(Biome::forest);
-	allowedBiomes.push_back(Biome::extremeHills);
 	allowedBiomes.push_back(Biome::swampland);
 	allowedBiomes.push_back(Biome::taiga);
 	allowedBiomes.push_back(Biome::iceFlats);
-	allowedBiomes.push_back(Biome::iceMountains);
-	allowedBiomes.push_back(Biome::desertHills);
-	allowedBiomes.push_back(Biome::forestHills);
-	allowedBiomes.push_back(Biome::smallerExtremeHills);
-	allowedBiomes.push_back(Biome::taigaHills);
-	allowedBiomes.push_back(Biome::jungle);
-	allowedBiomes.push_back(Biome::jungleHills);
+	allowedBiomes.push_back(Biome::rainforest);
+	allowedBiomes.push_back(Biome::rainforest);
 };
 
 void StrongholdFeature::_init()

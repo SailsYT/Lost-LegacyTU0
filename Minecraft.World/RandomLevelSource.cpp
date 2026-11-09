@@ -33,11 +33,11 @@ RandomLevelSource::RandomLevelSource(Level *level, int64_t seed, bool generateSt
 	level->getLevelData()->getMoatFlags(&m_classicEdgeMoat, &m_smallEdgeMoat, &m_mediumEdgeMoat);
 #endif
 	caveFeature = new LargeCaveFeature();
-	strongholdFeature = new StrongholdFeature();
-	villageFeature = new VillageFeature(m_XZSize);
-	mineShaftFeature = new MineShaftFeature();
-	scatteredFeature = new RandomScatteredLargeFeature();
-	canyonFeature = new CanyonFeature();
+	//strongholdFeature = new StrongholdFeature();
+	//villageFeature = new VillageFeature(m_XZSize);
+	//mineShaftFeature = new MineShaftFeature();
+	//scatteredFeature = new RandomScatteredLargeFeature();
+	//canyonFeature = new CanyonFeature();
 
 	this->level = level;
 
@@ -46,6 +46,7 @@ RandomLevelSource::RandomLevelSource(Level *level, int64_t seed, bool generateSt
 	lperlinNoise1 = new PerlinNoise(random, 16);
 	lperlinNoise2 = new PerlinNoise(random, 16);
 	perlinNoise1 = new PerlinNoise(random, 8);
+	surfaceNoise = new PerlinNoise(random, 4);
 	perlinNoise3 = new PerlinNoise(random, 4);
 
 	scaleNoise = new PerlinNoise(random, 10);
@@ -61,18 +62,16 @@ RandomLevelSource::RandomLevelSource(Level *level, int64_t seed, bool generateSt
 		floatingIslandScale = nullptr;
 		floatingIslandNoise = nullptr;
 	}
-
-	forestNoise = new PerlinNoise(random, 8);
 }
 
 RandomLevelSource::~RandomLevelSource()
 {
 	delete caveFeature;
-	delete strongholdFeature;
-	delete villageFeature;
-	delete mineShaftFeature;
-	delete scatteredFeature;
-	delete canyonFeature;
+	//delete strongholdFeature;
+	//delete villageFeature;
+	//delete mineShaftFeature;
+	//delete scatteredFeature;
+	//delete canyonFeature;
 
 	this->level = level;
 
@@ -91,20 +90,12 @@ RandomLevelSource::~RandomLevelSource()
 		delete floatingIslandNoise;
 	}
 
-	delete forestNoise;
-
-	if( pows.data != nullptr ) delete [] pows.data;
+	delete surfaceNoise;
 }
-
 
 int g_numPrepareHeightCalls = 0;
 LARGE_INTEGER g_totalPrepareHeightsTime = {0,0};
 LARGE_INTEGER g_averagePrepareHeightsTime = {0, 0};
-
-
-
-
-
 
 #ifdef _LARGE_WORLDS
 
@@ -253,12 +244,8 @@ void RandomLevelSource::prepareHeights(int xOffs, int zOffs, byteArray blocks)
 	int ySize = Level::genDepth / CHUNK_HEIGHT + 1;
 	int zSize = xChunks + 1;
 
-	BiomeArray biomes;	// 4J created locally here for thread safety, java has this as a class member
-
-	level->getBiomeSource()->getRawBiomeBlock(biomes, xOffs * CHUNK_WIDTH - 2, zOffs * CHUNK_WIDTH - 2, xSize + 5, zSize + 5);
-
 	doubleArray buffer;	// 4J - used to be declared with class level scope but tidying up for thread safety reasons
-	buffer = getHeights(buffer, xOffs * xChunks, 0, zOffs * xChunks, xSize, ySize, zSize, biomes);
+	buffer = getHeights(buffer, xOffs * xChunks, 0, zOffs * xChunks, xSize, ySize, zSize);
 
 	QueryPerformanceCounter(&startTime);
 	for (int xc = 0; xc < xChunks; xc++)
@@ -355,11 +342,7 @@ void RandomLevelSource::prepareHeights(int xOffs, int zOffs, byteArray blocks)
 	g_averagePrepareHeightsTime.QuadPart = g_totalPrepareHeightsTime.QuadPart / g_numPrepareHeightCalls;
 
 	delete [] buffer.data;
-	delete [] biomes.data;
-
-
 }
-
 
 void RandomLevelSource::buildSurfaces(int xOffs, int zOffs, byteArray blocks, BiomeArray biomes)
 {
@@ -367,35 +350,42 @@ void RandomLevelSource::buildSurfaces(int xOffs, int zOffs, byteArray blocks, Bi
 
 	double s = 1 / 32.0;
 
-	doubleArray depthBuffer(16*16); // 4J - used to be declared with class level scope but moved here for thread safety
+	doubleArray sandNoise(16 * 16);
+	doubleArray gravelNoise(16 * 16);
+	doubleArray stoneNoise(16 * 16);
 
-	depthBuffer = perlinNoise3->getRegion(depthBuffer, xOffs * 16, zOffs * 16, 0, 16, 16, 1, s * 2, s * 2, s * 2);
+	sandNoise = surfaceNoise->getRegion(sandNoise, xOffs * 16, 0, zOffs * 16, 16, 1, 16, s * 2, s * 2, s * 2);
+	gravelNoise = surfaceNoise->getRegion(gravelNoise, zOffs * 16, 0, xOffs * 16, 16, 1, 16, s * 2, s * 2, s * 2);
+	stoneNoise = perlinNoise3->getRegion(stoneNoise, xOffs * 16, 0, zOffs * 16, 16, 1, 16, s * 2, s * 2, s * 2);
 
-	for (int x = 0; x < 16; x++)
+	LevelGenerationOptions *lgo = app.getLevelGenerationOptions();
+
+	for (int z = 0; z < 16; z++)
 	{
-		for (int z = 0; z < 16; z++)
+		for (int x = 0; x < 16; x++)
 		{
-			Biome *b = biomes[z + x * 16];
+			Biome *b = biomes[x + z * 16];
 			float temp = b->getTemperature();
-			int runDepth = static_cast<int>(depthBuffer[x + z * 16] / 3 + 3 + random->nextDouble() * 0.25);
+
+			bool addSand = (sandNoise[x * 16 + z] + random->nextDouble() * 0.2) > 0;
+			bool addGravel = (gravelNoise[z * 16 + x] + random->nextDouble() * 0.2) > 3;
+			int runDepth = static_cast<int>(stoneNoise[x * 16 + z] / 3 + 3 + random->nextDouble() * 0.25);
 
 			int run = -1;
 
 			byte top = b->topMaterial;
 			byte material = b->material;
 
-			LevelGenerationOptions *lgo = app.getLevelGenerationOptions();
-			if(lgo != nullptr)
+			if (lgo != nullptr)
 			{
-				lgo->getBiomeOverride(b->id,material,top);
+				lgo->getBiomeOverride(b->id, material, top);
 			}
 
 			for (int y = Level::genDepthMinusOne; y >= 0; y--)
 			{
-				int offs = (z * 16 + x) * Level::genDepth + y;
+				int offs = (x * 16 + z) * Level::genDepth + y;
 
-				if (y <= 1 + random->nextInt(2))	// 4J - changed to make the bedrock not have bits you can get stuck in
-					//                if (y <= 0 + random->nextInt(5))
+				if (y == 0)
 				{
 					blocks[offs] = static_cast<byte>(Tile::unbreakable_Id);
 				}
@@ -420,9 +410,20 @@ void RandomLevelSource::buildSurfaces(int xOffs, int zOffs, byteArray blocks, Bi
 							{
 								top = b->topMaterial;
 								material = b->material;
-								if(lgo != nullptr)
+								if (lgo != nullptr)
 								{
-									lgo->getBiomeOverride(b->id,material,top);
+									lgo->getBiomeOverride(b->id, material, top);
+								}
+
+								if (addGravel)
+								{
+									top = static_cast<byte>(Tile::gravel_Id);
+									material = static_cast<byte>(Tile::gravel_Id);
+								}
+								else if (addSand)
+								{
+									top = static_cast<byte>(Tile::sand_Id);
+									material = static_cast<byte>(Tile::sand_Id);
 								}
 							}
 
@@ -433,6 +434,7 @@ void RandomLevelSource::buildSurfaces(int xOffs, int zOffs, byteArray blocks, Bi
 							}
 
 							run = runDepth;
+
 							if (y >= waterHeight - 1) blocks[offs] = top;
 							else blocks[offs] = material;
 						}
@@ -448,14 +450,27 @@ void RandomLevelSource::buildSurfaces(int xOffs, int zOffs, byteArray blocks, Bi
 								material = static_cast<byte>(Tile::sandStone_Id);
 							}
 						}
+
+						if (blocks[offs - 1] == 0)
+						{
+							if (blocks[offs] == Tile::sand_Id)
+							{
+								blocks[offs] = static_cast<byte>(Tile::sandStone_Id);
+							}
+							else if (blocks[offs] == Tile::gravel_Id)
+							{
+								blocks[offs] = static_cast<byte>(Tile::stone_Id);
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 
-	delete [] depthBuffer.data;
-
+	delete [] sandNoise.data;
+	delete [] gravelNoise.data;
+	delete [] stoneNoise.data;
 }
 
 LevelChunk *RandomLevelSource::create(int x, int z)
@@ -490,13 +505,13 @@ LevelChunk *RandomLevelSource::getChunk(int xOffs, int zOffs)
 	// 4J Stu Design Change - 1.8 gen goes stronghold, mineshaft, village, canyon
 	// this changed in 1.2 to canyon, mineshaft, village, stronghold
 	// This change makes sense as it stops canyons running through other structures
-	canyonFeature->apply(this, level, xOffs, zOffs, blocks);
+	//canyonFeature->apply(this, level, xOffs, zOffs, blocks);
 	if (generateStructures)
 	{
-		mineShaftFeature->apply(this, level, xOffs, zOffs, blocks);
-		villageFeature->apply(this, level, xOffs, zOffs, blocks);
-		strongholdFeature->apply(this, level, xOffs, zOffs, blocks);
-		scatteredFeature->apply(this, level, xOffs, zOffs, blocks);
+		//mineShaftFeature->apply(this, level, xOffs, zOffs, blocks);
+		//villageFeature->apply(this, level, xOffs, zOffs, blocks);
+		//strongholdFeature->apply(this, level, xOffs, zOffs, blocks);
+		//scatteredFeature->apply(this, level, xOffs, zOffs, blocks);
 	}
 	//        canyonFeature.apply(this, level, xOffs, zOffs, blocks);
 	// townFeature.apply(this, level, xOffs, zOffs, blocks);
@@ -522,24 +537,11 @@ void RandomLevelSource::lightChunk(LevelChunk *lc)
 	lc->recalcHeightmap();
 }
 
-
-doubleArray RandomLevelSource::getHeights(doubleArray buffer, int x, int y, int z, int xSize, int ySize, int zSize, BiomeArray& biomes)
+doubleArray RandomLevelSource::getHeights(doubleArray buffer, int x, int y, int z, int xSize, int ySize, int zSize)
 {
 	if (buffer.data == nullptr)
 	{
 		buffer = doubleArray(xSize * ySize * zSize);
-	}
-	if (pows.data == nullptr)
-	{
-		pows = floatArray(5 * 5);
-		for (int xb = -2; xb <= 2; xb++)
-		{
-			for (int zb = -2; zb <= 2; zb++)
-			{
-				float ppp = 10.0f / Mth::sqrt(xb * xb + zb * zb + 0.2f);
-				pows[xb + 2 + (zb + 2) * 5] = ppp;
-			}
-		}
 	}
 
 	double s = 1 * 684.412;
@@ -582,99 +584,91 @@ doubleArray RandomLevelSource::getHeights(doubleArray buffer, int x, int y, int 
 
 #endif
 
-	x = z = 0;
+	doubleArray temperature;
+	doubleArray humidity;
+	level->getBiomeSource()->getClimateBlock(temperature, humidity, x * CHUNK_WIDTH, z * CHUNK_WIDTH, 16, 16);
 
-	int p = 0;
-	int pp = 0;
+	int noiseIndex = 0;
+	int climateIndex = 0;
+	int climateStep = 16 / xSize;
 
 	for (int xx = 0; xx < xSize; xx++)
 	{
+		int j = xx * climateStep + climateStep / 2;
+
 		for (int zz = 0; zz < zSize; zz++)
 		{
-			float sss = 0;
-			float ddd = 0;
-			float pow = 0;
+			int k = zz * climateStep + climateStep / 2;
 
-			int rr = 2;
+			double temp = temperature[j + k * 16];
+			double humid = humidity[j + k * 16] * temp;
 
-			Biome *mb = biomes[(xx + 2) + (zz + 2) * (xSize + 5)];
-			for (int xb = -rr; xb <= rr; xb++)
-			{
-				for (int zb = -rr; zb <= rr; zb++)
-				{
-					Biome *b = biomes[(xx + xb + 2) + (zz + zb + 2) * (xSize + 5)];
-					float ppp = pows[xb + 2 + (zb + 2) * 5] / (b->depth + 2);
-					if (b->depth > mb->depth)
-					{
-						ppp /= 2;
-					}
-					sss += b->scale * ppp;
-					ddd += b->depth * ppp;
-					pow += ppp;
-				}
-			}
-			sss /= pow;
-			ddd /= pow;
+			double d5 = 1.0 - humid;
+			d5 *= d5;
+			d5 *= d5;
+			d5 = 1.0 - d5;
 
-			sss = sss * 0.9f + 0.1f;
-			ddd = (ddd * 4 - 1) / 8.0f;
+			double d6 = (sr[climateIndex] + 256.0) / 512.0 * d5;
+			if (d6 > 1.0) d6 = 1.0;
 
-			double rdepth = (dr[pp] / 8000.0);
+			double rdepth = dr[climateIndex] / 8000.0;
 			if (rdepth < 0) rdepth = -rdepth * 0.3;
 			rdepth = rdepth * 3.0 - 2.0;
 
 			if (rdepth < 0)
 			{
-				rdepth = rdepth / 2;
-				if (rdepth < -1) rdepth = -1;
-				rdepth = rdepth / 1.4;
-				rdepth /= 2;
+				rdepth /= 2.0;
+				if (rdepth < -1.0) rdepth = -1.0;
+				rdepth /= 1.4;
+				rdepth /= 2.0;
+				d6 = 0.0;
 			}
 			else
 			{
-				if (rdepth > 1) rdepth = 1;
-				rdepth = rdepth / 8;
+				if (rdepth > 1.0) rdepth = 1.0;
+				rdepth /= 8.0;
 			}
 
-			pp++;
+			if (d6 < 0) d6 = 0;
+			d6 += 0.5;
+
+			rdepth = rdepth * ySize / 16.0;
+
+			double yCenter = ySize / 2.0 + rdepth * 4.0;
+
+			climateIndex++;
 
 			for (int yy = 0; yy < ySize; yy++)
 			{
-				double depth = ddd;
-				double scale = sss;
+				double yOffs = (yy - yCenter) * 12.0 / d6;
+				if (yOffs < 0) yOffs *= 4.0;
 
-				depth += rdepth * 0.2;
-				depth = depth * ySize / 16.0;
+				double bb = ar[noiseIndex] / 512.0;
+				double cc = br[noiseIndex] / 512.0;
 
-				double yCenter = ySize / 2.0 + depth * 4;
+				double v = (pnr[noiseIndex] / 10.0 + 1.0) / 2.0;
 
-				double val = 0;
-
-				double yOffs = (yy - (yCenter)) * 12 * 128 / Level::genDepth / scale;
-
-				if (yOffs < 0) yOffs *= 4;
-
-				double bb = ar[p] / 512;
-				double cc = br[p] / 512;
-
-				double v = (pnr[p] / 10 + 1) / 2;
+				double val;
 				if (v < 0) val = bb;
 				else if (v > 1) val = cc;
 				else val = bb + (cc - bb) * v;
+
 				val -= yOffs;
 
 				if (yy > ySize - 4)
 				{
-					double slide = (yy - (ySize - 4)) / (4 - 1.0f);
-					val = val * (1 - slide) + -10 * slide;
+					double slide = (yy - (ySize - 4)) / 3.0;
+					val = val * (1.0 - slide) + -10.0 * slide;
 				}
 
-				buffer[p] = val;
-				p++;
+				buffer[noiseIndex] = val;
+				noiseIndex++;
 			}
 		}
 	}
 
+	delete [] temperature.data;
+	delete [] humidity.data;
 	delete [] pnr.data;
 	delete [] ar.data;
 	delete [] br.data;
@@ -684,7 +678,6 @@ doubleArray RandomLevelSource::getHeights(doubleArray buffer, int x, int y, int 
 	delete [] fis.data;
 
 	return buffer;
-
 }
 
 bool RandomLevelSource::hasChunk(int x, int y)
@@ -770,22 +763,22 @@ void RandomLevelSource::postProcess(ChunkSource *parent, int xt, int zt)
 	int64_t zScale = pprandom->nextLong() / 2 * 2 + 1;
 	pprandom->setSeed(((xt * xScale) + (zt * zScale)) ^ level->getSeed());
 
-	bool hasVillage = false;
+	//bool hasVillage = false;
 
 	PIXBeginNamedEvent(0,"Structure postprocessing");
 	if (generateStructures)
 	{
-		mineShaftFeature->postProcess(level, pprandom, xt, zt);
-		hasVillage = villageFeature->postProcess(level, pprandom, xt, zt);
-		strongholdFeature->postProcess(level, pprandom, xt, zt);
-		scatteredFeature->postProcess(level, random, xt, zt);
+		//mineShaftFeature->postProcess(level, pprandom, xt, zt);
+		//hasVillage = villageFeature->postProcess(level, pprandom, xt, zt);
+		//strongholdFeature->postProcess(level, pprandom, xt, zt);
+		//scatteredFeature->postProcess(level, random, xt, zt);
 	}
 	PIXEndNamedEvent();
 
 	PIXBeginNamedEvent(0,"Lakes");
-	if (biome != Biome::desert && biome != Biome::desertHills)
+	if (biome != Biome::desert)
 	{
-		if (!hasVillage && pprandom->nextInt(4) == 0)
+		if (pprandom->nextInt(4) == 0)
 		{
 			int x = xo + pprandom->nextInt(16) + 8;
 			int y = pprandom->nextInt(Level::genDepth);
@@ -798,7 +791,7 @@ void RandomLevelSource::postProcess(ChunkSource *parent, int xt, int zt)
 	PIXEndNamedEvent();
 
 	PIXBeginNamedEvent(0,"Lava");
-	if (!hasVillage && pprandom->nextInt(8) == 0)
+	if (pprandom->nextInt(8) == 0)
 	{
 		int x = xo + pprandom->nextInt(16) + 8;
 		int y = pprandom->nextInt(pprandom->nextInt(Level::genDepth - 8) + 8);
@@ -886,19 +879,11 @@ vector<Biome::MobSpawnerData *> *RandomLevelSource::getMobsAt(MobCategory *mobCa
 	{
 		return nullptr;
 	}
-	if (mobCategory == MobCategory::monster && scatteredFeature->isSwamphut(x, y, z))
-	{
-		return scatteredFeature->getSwamphutEnemies();
-	}
 	return biome->getMobs(mobCategory);
 }
 
 TilePos *RandomLevelSource::findNearestMapFeature(Level *level, const wstring& featureName, int x, int y, int z)
 {
-	if (LargeFeature::STRONGHOLD == featureName && strongholdFeature != nullptr)
-	{
-		return strongholdFeature->getNearestGeneratedFeature(level, x, y, z);
-	}
 	return nullptr;
 }
 
@@ -906,9 +891,9 @@ void RandomLevelSource::recreateLogicStructuresForChunk(int chunkX, int chunkZ)
 {
 	if (generateStructures)
 	{
-		mineShaftFeature->apply(this, level, chunkX, chunkZ, byteArray());
-		villageFeature->apply(this, level, chunkX, chunkZ, byteArray());
-		strongholdFeature->apply(this, level, chunkX, chunkZ, byteArray());
-		scatteredFeature->apply(this, level, chunkX, chunkZ, byteArray());
+		//mineShaftFeature->apply(this, level, chunkX, chunkZ, byteArray());
+		//villageFeature->apply(this, level, chunkX, chunkZ, byteArray());
+		//strongholdFeature->apply(this, level, chunkX, chunkZ, byteArray());
+		//scatteredFeature->apply(this, level, chunkX, chunkZ, byteArray());
 	}
 }

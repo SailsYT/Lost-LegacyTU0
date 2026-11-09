@@ -8,16 +8,7 @@
 
 JungleBiome::JungleBiome(int id) : Biome(id)
 {
-	decorator->treeCount = 50;
-	decorator->grassCount = 25;
-	decorator->flowerCount = 4;
-
-	enemies.push_back(new MobSpawnerData(eTYPE_OCELOT, 2, 1, 1));
-
-	// make chicken a lot more common in the jungle
-	friendlies.push_back(new MobSpawnerData(eTYPE_CHICKEN, 10, 4, 4));
 }
-
 
 Feature *JungleBiome::getTreeFeature(Random *random)
 {

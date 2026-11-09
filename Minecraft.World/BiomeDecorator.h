@@ -12,9 +12,7 @@ class BiomeDecorator
 	friend class PlainsBiome;
 	friend class SwampBiome;
 	friend class TaigaBiome;
-	friend class MushroomIslandBiome;
-	friend class BeachBiome;
-	friend class JungleBiome;
+	friend class RainforestBiome;
 protected:
 	Level *level;
 	Random *random;

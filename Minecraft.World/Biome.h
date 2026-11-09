@@ -26,28 +26,16 @@ public:
 	static Biome *ocean;
 	static Biome *plains;
 	static Biome *desert;
-	static Biome *extremeHills;
 	static Biome *forest;
 	static Biome *taiga;
 	static Biome *swampland;
-	static Biome *river;
 	static Biome *hell;
 	static Biome *sky;
 	static Biome *frozenOcean;
-	static Biome *frozenRiver;
 	static Biome *iceFlats;
-	static Biome *iceMountains;
-	static Biome *mushroomIsland;
-	static Biome *mushroomIslandShore ;
-	static Biome *beaches;
-	static Biome *desertHills;
-	static Biome *forestHills;
-	static Biome *taigaHills;
-	static Biome *smallerExtremeHills;
-	static Biome *jungle;
-	static Biome *jungleHills;
+	static Biome *rainforest;
 
-	static const int BIOME_COUNT = 23; // 4J Stu added
+	static const int BIOME_COUNT = 11; // 4J Stu added
 
 public:
 	wstring m_name;

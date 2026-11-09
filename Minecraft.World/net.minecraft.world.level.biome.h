@@ -6,7 +6,6 @@
 #include "HellBiome.h"
 #include "RainforestBiome.h"
 #include "IceBiome.h"
-#include "MushroomIslandBiome.h"
 #include "TheEndBiome.h"
 #include "TheEndBiomeDecorator.h"
 #include "WaterlilyFeature.h"
@@ -20,13 +19,5 @@
 #include "BiomeCache.h"
 #include "BiomeDecorator.h"
 #include "DesertBiome.h"
-#include "ExtremeHillsBiome.h"
 #include "OceanBiome.h"
 #include "PlainsBiome.h"
-#include "RiverBiome.h"
-
-// 1.1
-#include "BeachBiome.h"
-
-//1.2.3
-#include "JungleBiome.h"
