@@ -40,7 +40,7 @@ public:
 #else
 	static int64_t findSeed(LevelType *generator);	// 4J added
 #endif
-	~BiomeSource();
+	virtual ~BiomeSource();
 
 public:
 	vector<Biome *> getPlayerSpawnBiomes() { return playerSpawnBiomes; }
@@ -55,6 +55,8 @@ public:
 	// 4J - changed the interface for these methods, mainly for thread safety
 	virtual BiomeCache::Block *getBlockAt(int x, int y);
 	virtual float getTemperature(int x, int y, int z) const;
+
+	virtual void getClimateBlock(doubleArray &temperatures, doubleArray &humidities, int x, int z, int w, int h) const;
 	float scaleTemp(float temp, int y ) const;	// 4J - brought forward from 1.2.3
 	virtual floatArray getTemperatureBlock(int x, int z, int w, int h) const;
     virtual void getTemperatureBlock(floatArray& temperatures, int x, int z, int w, int h) const;

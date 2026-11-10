@@ -39,19 +39,11 @@ LayerArray Layer::getDefaultLayers(int64_t seed, LevelType *levelType)
 		zoomLevel = 6;
 	}
 
-	shared_ptr<Layer> riverLayer = islandLayer;
-	riverLayer = ZoomLayer::zoom(1000, riverLayer, 0);
-	riverLayer = std::make_shared<RiverInitLayer>(100, riverLayer);
-	riverLayer = ZoomLayer::zoom(1000, riverLayer, zoomLevel + 2);
-	riverLayer = std::make_shared<RiverLayer>(1, riverLayer);
-	riverLayer = std::make_shared<SmoothLayer>(1000, riverLayer);
-
 	shared_ptr<Layer> biomeLayer = islandLayer;
 	biomeLayer = ZoomLayer::zoom(1000, biomeLayer, 0);
 	biomeLayer = std::make_shared<BiomeInitLayer>(200, biomeLayer, levelType);
 
 	biomeLayer = ZoomLayer::zoom(1000, biomeLayer, 2);
-	biomeLayer = std::make_shared<RegionHillsLayer>(1000, biomeLayer);
 
 	for (int i = 0; i < zoomLevel; i++)
 	{
@@ -59,30 +51,9 @@ LayerArray Layer::getDefaultLayers(int64_t seed, LevelType *levelType)
 
 	if (i == 0) biomeLayer = std::make_shared<AddIslandLayer>(3, biomeLayer);
 
-		if (i == 0)
-		{
-			// 4J - moved mushroom islands to here. This skips 3 zooms that the old location of the add was, making them about 1/8 of the original size. Adding
-			// them at this scale actually lets us place them near enough other land, if we add them at the same scale as java then they have to be too far out to see for
-			// the scale of our maps
-			biomeLayer = std::make_shared<AddMushroomIslandLayer>(5, biomeLayer);
-		}
-
-		if (i == 1 )
-		{
-			// 4J - now expand mushroom islands up again. This does a simple region grow to add a new mushroom island element when any of the neighbours are also mushroom islands.
-			// This helps make the islands into nice compact shapes of the type that are actually likely to be able to make an island out of the sea in a small space. Also
-			// helps the shore layer from doing too much damage in shrinking the islands we are making
-			biomeLayer = std::make_shared<GrowMushroomIslandLayer>(5, biomeLayer);
-			// Note - this reduces the size of mushroom islands by turning their edges into shores. We are doing this at i == 1 rather than i == 0 as the original does
-			biomeLayer = std::make_shared<ShoreLayer>(1000, biomeLayer);
-
-			biomeLayer = std::make_shared<SwampRiversLayer>(1000, biomeLayer);
-		}
 	}
 
 	biomeLayer = std::make_shared<SmoothLayer>(1000, biomeLayer);
-
-	biomeLayer = std::make_shared<RiverMixerLayer>(100, biomeLayer, riverLayer);
 
 #ifndef _CONTENT_PACKAGE
 #ifdef _BIOME_OVERRIDE

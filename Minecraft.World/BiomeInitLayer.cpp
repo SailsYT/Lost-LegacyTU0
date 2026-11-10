@@ -8,27 +8,24 @@ BiomeInitLayer::BiomeInitLayer(int64_t seed, shared_ptr<Layer>parent, LevelType 
 {
 	this->parent = parent;
 
-
 	if(levelType == LevelType::lvl_normal_1_1)
+	{
+		startBiomes = BiomeArray(5);
+		startBiomes[0] = Biome::desert;
+		startBiomes[1] = Biome::forest;
+		startBiomes[2] = Biome::swampland;
+		startBiomes[3] = Biome::plains;
+		startBiomes[4] = Biome::taiga;
+	}
+	else
 	{
 		startBiomes = BiomeArray(6);
 		startBiomes[0] = Biome::desert;
 		startBiomes[1] = Biome::forest;
-		startBiomes[2] = Biome::extremeHills;
-		startBiomes[3] = Biome::swampland;
-		startBiomes[4] = Biome::plains;
-		startBiomes[5] = Biome::taiga;
-	}
-	else
-	{
-		startBiomes = BiomeArray(7);
-		startBiomes[0] = Biome::desert;
-		startBiomes[1] = Biome::forest;
-		startBiomes[2] = Biome::extremeHills;
-		startBiomes[3] = Biome::swampland;
-		startBiomes[4] = Biome::plains;
-		startBiomes[5] = Biome::taiga;
-		startBiomes[6] = Biome::jungle;
+		startBiomes[2] = Biome::swampland;
+		startBiomes[3] = Biome::plains;
+		startBiomes[4] = Biome::taiga;
+		startBiomes[5] = Biome::rainforest;
 	}
 }
 
@@ -51,10 +48,6 @@ intArray BiomeInitLayer::getArea(int xo, int yo, int w, int h)
             if (old == 0)
 			{
                 result[x + y * w] = 0;
-            }
-			else if (old == Biome::mushroomIsland->id)
-			{
-                result[x + y * w] = old;
             }
 			else if (old == 1)
 			{

@@ -5,6 +5,7 @@
 #include "net.minecraft.world.level.storage.h"
 #include "Dimension.h"
 #include "BiomeSource.h"
+#include "BetaBiomeSource.h"
 #include "FixedBiomeSource.h"
 #include "OldChunkStorage.h"
 #include "HellDimension.h"
@@ -53,7 +54,7 @@ void Dimension::init()
 		}
 		else
 		{
-			biomeSource = new BiomeSource(level);
+			biomeSource = new BetaBiomeSource(level->getSeed());
 		}
 }
 

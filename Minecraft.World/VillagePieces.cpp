@@ -579,7 +579,7 @@ VillagePieces::StartPiece::StartPiece(BiomeSource *biomeSource, int genDepth, Ra
 	m_level = level;
 
 	Biome *biome = biomeSource->getBiome(west, north);
-	isDesertVillage = biome == Biome::desert || biome == Biome::desertHills;
+	isDesertVillage = biome == Biome::desert;
 }
 
 VillagePieces::StartPiece::~StartPiece()

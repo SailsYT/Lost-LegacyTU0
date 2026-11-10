@@ -5,11 +5,11 @@ using namespace std;
 
 class ProgressListener;
 class LargeFeature;
-class StrongholdFeature;
-class VillageFeature;
-class MineShaftFeature;
+//class StrongholdFeature;
+//class VillageFeature;
+//class MineShaftFeature;
 class PerlinNoise;
-class RandomScatteredLargeFeature;
+//class RandomScatteredLargeFeature;
 
 class RandomLevelSource : public ChunkSource
 {
@@ -38,13 +38,11 @@ private:
 	PerlinNoise *floatingIslandNoise;
 
 public:
-	PerlinNoise *forestNoise;
+	PerlinNoise *surfaceNoise;
 
 private:
 	Level *level;
 	const bool generateStructures;
-
-	floatArray pows;
 
 public:
 	RandomLevelSource(Level *level, int64_t seed, bool generateStructures);
@@ -63,11 +61,11 @@ public:
 
 private:
 	LargeFeature *caveFeature;
-	StrongholdFeature *strongholdFeature;
-	VillageFeature *villageFeature;
-	MineShaftFeature *mineShaftFeature;
-	RandomScatteredLargeFeature *scatteredFeature;
-	LargeFeature *canyonFeature;
+	//StrongholdFeature *strongholdFeature;
+	//VillageFeature *villageFeature;
+	//MineShaftFeature *mineShaftFeature;
+	//RandomScatteredLargeFeature *scatteredFeature;
+	//LargeFeature *canyonFeature;
 private:
 	virtual LevelChunk *create(int x, int z);
 
@@ -76,7 +74,7 @@ public:
 	virtual void lightChunk(LevelChunk *lc);	// 4J added
 
 private:
-	doubleArray getHeights(doubleArray buffer, int x, int y, int z, int xSize, int ySize, int zSize, BiomeArray& biomes);
+	doubleArray getHeights(doubleArray buffer, int x, int y, int z, int xSize, int ySize, int zSize);
 
 public:
 	virtual bool hasChunk(int x, int y);

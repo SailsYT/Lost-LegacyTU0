@@ -8,6 +8,8 @@
 #include "../Minecraft.Client/Minecraft.h"
 #include "../Minecraft.Client/ProgressRenderer.h"
 
+// Voxel - this shits basically dead now
+
 // 4J - removal of separate temperature & downfall layers brought forward from 1.2.3
 void BiomeSource::_init()
 {
@@ -20,10 +22,7 @@ void BiomeSource::_init()
 	playerSpawnBiomes.push_back(Biome::taiga);
 	// 4J-PB - Moving forward plains as a spawnable biome (mainly for the Superflat world)
 	playerSpawnBiomes.push_back(Biome::plains);
-	playerSpawnBiomes.push_back(Biome::taigaHills);
-	playerSpawnBiomes.push_back(Biome::forestHills);
-	playerSpawnBiomes.push_back(Biome::jungle);
-	playerSpawnBiomes.push_back(Biome::jungleHills);
+	playerSpawnBiomes.push_back(Biome::rainforest);
 }
 
 void BiomeSource::_init(int64_t seed, LevelType *generator)
@@ -409,6 +408,36 @@ void BiomeSource::update()
 
 //#define DEBUG_SEEDS 50
 
+void BiomeSource::getClimateBlock(doubleArray &temperatures, doubleArray &humidities, int x, int z, int w, int h) const
+{
+	const unsigned int needed = static_cast<unsigned int>(w) * static_cast<unsigned int>(h);
+
+	floatArray temperatureBlock;
+	floatArray downfallBlock;
+	getTemperatureBlock(temperatureBlock, x, z, w, h);
+	getDownfallBlock(downfallBlock, x, z, w, h);
+
+	if (temperatures.data == nullptr || temperatures.length < needed)
+	{
+		if (temperatures.data != nullptr) delete [] temperatures.data;
+		temperatures = doubleArray(needed);
+	}
+	if (humidities.data == nullptr || humidities.length < needed)
+	{
+		if (humidities.data != nullptr) delete [] humidities.data;
+		humidities = doubleArray(needed);
+	}
+
+	for (unsigned int i = 0; i < needed; i++)
+	{
+		temperatures[i] = temperatureBlock[i];
+		humidities[i] = downfallBlock[i];
+	}
+
+	delete [] temperatureBlock.data;
+	delete [] downfallBlock.data;
+}
+
 // 4J added - find a seed for this biomesource that matches certain criteria
 #ifdef __PSVITA__
 int64_t BiomeSource::findSeed(LevelType *generator, bool* pServerRunning)	// MGH - added pRunning, so we can early out of this on Vita as it can take up to 60 secs
@@ -451,49 +480,21 @@ bool BiomeSource::getIsMatch(float *frac)
 		true,	// ocean
 		true,	// plains
 		true,	// desert
-		false,	// extreme hills
 		true,	// forest
 		true,	// taiga
-		true,	// swamps
-		false,	// river
+		true,	// swampland
 		false,	// hell
-		false,	// end biome
+		false,	// sky
 		false,	// frozen ocean
-		false,	// frozen river
-		false,	// ice flats
-		false,	// ice mountains
-		true,	// mushroom island / shore
-		false,  // mushroom shore (combined with above)
-		false,	// beach
-		false,	// desert hills (combined with desert)
-		false,	// forest hills (combined with forest)
-		false,	// taiga hills (combined with taga)
-		false,	// small extreme hills
-		true,	// jungle
-		false,	// jungle hills (combined with jungle)
+		true,	// ice flats
+		true,	// rainforest
 	};
-
 
 	// Don't want more than 15% ocean
 	if( frac[0] > 0.15f )
 	{
 		return false;
 	}
-
-	// Consider mushroom shore & islands as the same by finding max
-	frac[14] = ( ( frac[15] > frac[14] ) ? frac[15] : frac[14] );
-
-	// Merge desert and desert hills
-	frac[2] = ( ( frac[17] > frac[2] ) ? frac[17] : frac[2] );
-
-	// Merge forest and forest hills
-	frac[4] = ( ( frac[18] > frac[4] ) ? frac[18] : frac[4] );
-
-	// Merge taiga and taiga hills
-	frac[5] = ( ( frac[19] > frac[5] ) ? frac[19] : frac[5] );
-
-	// Merge jungle and jungle hills
-	frac[21] =  ( ( frac[22] > frac[21] ) ? frac[22] : frac[21] );
 
 	// Loop through all biome types, and:
 	// (1) count them
@@ -502,9 +503,6 @@ bool BiomeSource::getIsMatch(float *frac)
 	int typeCount = 0;
 	for( int i = 0; i < Biome::BIOME_COUNT; i++ )
 	{
-		// We want to skip some where we have merged with another type
-		if(i == 15 || i == 17 || i == 18 || i == 19 || i == 22) continue;
-
 		// Consider 0.1% as being "present" - this equates an area of about 3 chunks
 		if( frac[i] > 0.001f )
 		{

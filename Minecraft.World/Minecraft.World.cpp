@@ -15,6 +15,7 @@
 #include "net.minecraft.world.effect.h"
 
 #include "Minecraft.World.h"
+#include "BetaBiomeSource.h"
 #include "../Minecraft.Client/ServerLevel.h"
 
 #ifdef _DURANGO
@@ -39,6 +40,7 @@ void MinecraftWorld_RunStaticCtors()
 		ShovelItem::staticCtor();
 		BlockReplacements::staticCtor();
 		Biome::staticCtor();
+		BetaBiomeSource::staticCtor();
 		MobEffect::staticCtor();
 		Item::staticCtor();
 		FurnaceRecipes::staticCtor();
