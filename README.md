@@ -2,7 +2,7 @@
 Recreating the feel of Beta 1.6.6 with extra additions and fun features!
 
 This project is based on source code of Minecraft Consoles (SMART CMD)
-![LostLegacy](screenshots/LostLegacy.png)
+![Lost-LegacyTU0](Screenshots/LostLegacy.png)
 
 ## Whats New?
 - Added Beta World Generation
@@ -10,7 +10,7 @@ This project is based on source code of Minecraft Consoles (SMART CMD)
 - New Cheats
 - a LOT of new Splash Texts
 - bugs? (most likely)
-![LostLegacy](screenshots/Cliff.png)
+![Lost-LegacyTU0](Screenshots/Cliff.png)
 
 ## Additions, Removals and Changes!
 - no sprinting, XP or Hunger (needs rework)
@@ -24,16 +24,16 @@ This project is based on source code of Minecraft Consoles (SMART CMD)
 - classic Textures
 - cheat codes
 - a stripped down survival crafting menu
-![LostLegacy](screenshots/Wideshot.png)
+![Lost-LegacyTU0](Screenshots/Wideshot.png)
 
 ## Coming soon:
 - improved Lighting 
 - Beta Chests
 - More fun things :D
-![LostLegacy](screenshots/Spoopy.png)
+![Lost-LegacyTU0](Screenshots/Spoopy.png)
 
 ## Socials:
 - FIND ME ON DISCORD: @sailsyt
 - Join the LCE Center: https://discord.gg/hzjd6VsWS9
 - Check out Legacy News Network: https://www.youtube.com/@LegacyNewsNetwork
-![LostLegacy](screenshots/This.png)
+![Lost-LegacyTU0](Screenshots/This.png)
