@@ -1003,9 +1003,10 @@ bool LivingEntity::onLadder()
 	int yt = Mth::floor(bb->y0);
 	int zt = Mth::floor(z);
 
-	// 4J-PB - TU9 - add climbable vines
 	int iTile = level->getTile(xt, yt, zt);
-	return  (iTile== Tile::ladder_Id) || (iTile== Tile::vine_Id);
+
+	// Sails: Removed TU9 vine functionality
+	return  (iTile == Tile::ladder_Id);
 }
 
 bool LivingEntity::isShootable()
