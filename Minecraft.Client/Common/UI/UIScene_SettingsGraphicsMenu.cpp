@@ -176,9 +176,7 @@ void UIScene_SettingsGraphicsMenu::handleInput(int iPad, int key, bool repeat, b
             #ifdef _WINDOWS64
             if (m_iPad == ProfileManager.GetPrimaryPad())
             {
-                ApplyDisplayOptions(
-                    m_checkboxFullscreen.IsChecked(),
-                    m_checkboxVSync.IsChecked());
+                ApplyDisplayOptions(m_checkboxFullscreen.IsChecked(), m_checkboxVSync.IsChecked());
             }
             #endif
 			navigateBack();
