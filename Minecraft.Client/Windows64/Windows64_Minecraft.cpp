@@ -52,6 +52,7 @@
 #include <string>
 #include <cctype>
 #include <cstring>
+#include "DisplayOptions.h" // Sails: added for fullscreen/vsync
 
 bool g_bVSync = true;                 
 
@@ -181,6 +182,7 @@ static void SaveFullscreenOption(bool fullscreen)
 	if (fopen_s(&f, path, "w") == 0 && f)
 	{
 		fprintf(f, "fullscreen=%d\n", fullscreen ? 1 : 0);
+        fprintf(f, "vsync=%d\n", g_bVSync ? 1 : 0);
 		fclose(f);
 	}
 }
@@ -189,6 +191,9 @@ static bool LoadFullscreenOption()
 {
 	char path[MAX_PATH];
 	GetOptionsFilePath(path, sizeof(path));
+
+	bool fullscreen = false;
+
 	FILE *f = nullptr;
 	if (fopen_s(&f, path, "r") == 0 && f)
 	{
@@ -198,13 +203,16 @@ static bool LoadFullscreenOption()
 			int val = 0;
 			if (sscanf_s(line, "fullscreen=%d", &val) == 1)
 			{
-				fclose(f);
-				return val != 0;
+                fullscreen = (val != 0);
+			}
+			else if (sscanf_s(line, "vsync=%d", &val) == 1)
+			{
+                g_bVSync = (val != 0);
 			}
 		}
 		fclose(f);
 	}
-	return false;
+	return fullscreen;
 }
 // ------------------------------------------------------------------
 
@@ -1319,6 +1327,30 @@ void ToggleFullscreen()
 		g_KBMInput.SetWindowFocused(true);
 }
 
+bool IsFullscreenEnabled()
+{
+    return g_isFullscreen;
+}
+
+bool IsVSyncEnabled()
+{
+    return g_bVSync;
+}
+
+void ApplyDisplayOptions(bool fullscreen, bool vsync)
+{
+    g_bVSync = vsync;
+
+    if (g_isFullscreen != fullscreen)
+    {
+        ToggleFullscreen();
+    }
+    else
+    {
+        SaveFullscreenOption(g_isFullscreen);
+    }
+}
+
 //--------------------------------------------------------------------------------------
 // Clean up the objects we've created
 //--------------------------------------------------------------------------------------
@@ -1846,10 +1878,20 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 		RenderManager.Set_matrixDirty();
 #endif
-		// Present the frame.
-		RenderManager.Present();
+        // Sails: present the frame with the selected VSync setting
+        if (g_bVSync || g_pSwapChain == nullptr)
+        {
+            RenderManager.Present();
+        }
+        else
+        {
+            HRESULT hrPresent = g_pSwapChain->Present(0, 0);
 
-		ui.CheckMenuDisplayed();
+            if (FAILED(hrPresent))
+            {
+                RenderManager.Present();
+            }
+        }
 
 		// Update mouse grab: grab when in-game and no menu is open
 		{

@@ -1030,6 +1030,7 @@ void LivingEntity::causeFallDamage(float distance)
 	if (dmg > 0)
 	{
 		// 4J - new sounds here brought forward from 1.2.3
+		// Sails: Keeping these in cause at the end of the day it is night
 		if (dmg > 4)
 		{
 			playSound(eSoundType_DAMAGE_FALL_BIG, 1, 1);

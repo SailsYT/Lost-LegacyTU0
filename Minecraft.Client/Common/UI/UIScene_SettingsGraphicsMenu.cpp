@@ -4,6 +4,9 @@
 #include "../../Minecraft.h"
 #include "../../Options.h"
 #include "../../GameRenderer.h"
+#ifdef _WINDOWS64
+#include "../../Windows64/DisplayOptions.h"
+#endif
 
 namespace
 {
@@ -63,7 +66,12 @@ UIScene_SettingsGraphicsMenu::UIScene_SettingsGraphicsMenu(int iPad, void *initD
 	m_checkboxBedrockFog.init(app.GetString(IDS_CHECKBOX_RENDER_BEDROCKFOG),eControl_BedrockFog,(app.GetGameSettings(m_iPad,eGameSetting_BedrockFog)!=0));
 	m_checkboxCustomSkinAnim.init(app.GetString(IDS_CHECKBOX_CUSTOM_SKIN_ANIM),eControl_CustomSkinAnim,(app.GetGameSettings(m_iPad,eGameSetting_CustomSkinAnim)!=0));
 
-	
+#ifdef _WINDOWS64
+    m_checkboxFullscreen.init(L"Fullscreen", eControl_Fullscreen, IsFullscreenEnabled());
+
+    m_checkboxVSync.init(L"VSync", eControl_VSync, IsVSyncEnabled());
+#endif
+
 	WCHAR TempString[256];
 
 	swprintf(TempString, 256, L"Render Distance: %d",app.GetGameSettings(m_iPad,eGameSetting_RenderDistance));	
@@ -165,7 +173,14 @@ void UIScene_SettingsGraphicsMenu::handleInput(int iPad, int key, bool repeat, b
 			app.SetGameSettings(m_iPad,eGameSetting_Clouds,m_checkboxClouds.IsChecked()?1:0);
 			app.SetGameSettings(m_iPad,eGameSetting_BedrockFog,m_checkboxBedrockFog.IsChecked()?1:0);
 			app.SetGameSettings(m_iPad,eGameSetting_CustomSkinAnim,m_checkboxCustomSkinAnim.IsChecked()?1:0);
-
+            #ifdef _WINDOWS64
+            if (m_iPad == ProfileManager.GetPrimaryPad())
+            {
+                ApplyDisplayOptions(
+                    m_checkboxFullscreen.IsChecked(),
+                    m_checkboxVSync.IsChecked());
+            }
+            #endif
 			navigateBack();
 			handled = true;
 		}

@@ -15,13 +15,19 @@ private:
 		eControl_RenderDistance,
 		eControl_Gamma,
 		eControl_FOV,
-		eControl_InterfaceOpacity
+		eControl_InterfaceOpacity,
+		eControl_Fullscreen,
+		eControl_VSync
 	};
 
-	UIControl_CheckBox m_checkboxClouds, m_checkboxFullscreen, m_checkboxBedrockFog, m_checkboxCustomSkinAnim; // Checkboxes
+	UIControl_CheckBox m_checkboxClouds, m_checkboxFullscreen, m_checkboxVSync, m_checkboxBedrockFog, m_checkboxCustomSkinAnim; // Checkboxes
 	UIControl_Slider m_sliderRenderDistance, m_sliderGamma, m_sliderFOV, m_sliderInterfaceOpacity; // Sliders
 	UI_BEGIN_MAP_ELEMENTS_AND_NAMES(UIScene)
 		UI_MAP_ELEMENT( m_checkboxClouds, "Clouds")
+#ifdef _WINDOWS64
+        UI_MAP_ELEMENT(m_checkboxFullscreen, "ExclusiveFullscreen")
+        UI_MAP_ELEMENT(m_checkboxVSync, "VSync")
+#endif
 		UI_MAP_ELEMENT( m_checkboxBedrockFog, "BedrockFog")
 		UI_MAP_ELEMENT( m_checkboxCustomSkinAnim, "CustomSkinAnim")
 		UI_MAP_ELEMENT( m_sliderRenderDistance, "RenderDistance")
