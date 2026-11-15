@@ -23,6 +23,8 @@ This project is based on source code of Minecraft Consoles (SMART CMD)
 - classic SFX
 - classic Textures
 - cheat codes
+- Fullscreen and Vsync!
+- Toggle-able sprint 
 - a stripped down survival crafting menu
 ![Lost-LegacyTU0](Screenshots/Wideshot.png)
 
