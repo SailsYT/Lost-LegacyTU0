@@ -162,6 +162,10 @@ void UIScene_HUD::tick()
 
 void UIScene_HUD::customDraw(IggyCustomDrawCallbackRegion *region)
 {
+#ifdef _WINDOWS64
+	// Sails: Inv items are now drawn by C++ HUD
+    return;
+#endif
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 	if(pMinecraft->localplayers[m_iPad] == nullptr || pMinecraft->localgameModes[m_iPad] == nullptr) return;
 

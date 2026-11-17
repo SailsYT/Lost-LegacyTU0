@@ -1,5 +1,4 @@
 // Minecraft.cpp : Defines the entry point for the application.
-//
 
 #include "stdafx.h"
 
@@ -1878,8 +1877,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 		RenderManager.Set_matrixDirty();
 #endif
+
         // Sails: present the frame with the selected VSync setting
-        if (g_bVSync || g_pSwapChain == nullptr)
+		if (g_bVSync || g_pSwapChain == nullptr)
         {
             RenderManager.Present();
         }
@@ -1892,6 +1892,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                 RenderManager.Present();
             }
         }
+
+		// Sails: fix invis menu bug, i hate this took 2 hours to fix :sob:
+        ui.CheckMenuDisplayed();
 
 		// Update mouse grab: grab when in-game and no menu is open
 		{

@@ -188,7 +188,11 @@ void IUIScene_HUD::renderPlayerHealth()
 	Minecraft *pMinecraft = Minecraft::GetInstance();
 	int iPad = getPad();
 
+#ifdef _WINDOWS64
+    ShowHealth(false);
+#else
 	ShowHealth(true);
+#endif
 
 	SetRegenerationEffect(pMinecraft->localplayers[iPad]->hasEffect(MobEffect::regeneration));
 
@@ -243,7 +247,11 @@ void IUIScene_HUD::renderPlayerHealth()
 		// Update air
 		if (pMinecraft->localplayers[iPad]->isUnderLiquid(Material::water))
 		{
-			ShowAir(true);
+#ifdef _WINDOWS64
+            ShowAir(false);
+#else
+            showAir(true);
+#endif
 			int count = static_cast<int>(ceil((pMinecraft->localplayers[iPad]->getAirSupply() - 2) * 10.0f / Player::TOTAL_AIR_SUPPLY));
 			int extra = static_cast<int>(ceil((pMinecraft->localplayers[iPad]->getAirSupply()) * 10.0f / Player::TOTAL_AIR_SUPPLY)) - count;
 			SetAir(count, extra);

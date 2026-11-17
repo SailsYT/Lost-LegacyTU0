@@ -659,6 +659,163 @@ void Gui::render(float a, bool mouseFree, int xMouse, int yMouse)
 		}
 #endif // RENDER_HUD
 
+		// Sails: C++ hotbar, inspired by Str1k3r's
+#ifdef _WINDOWS64
+		if (bDisplayGui && minecraft->player->inventory)
+		{
+			// load the original hotbar texture
+            static ResourceLocation guiTexture(TN_GUI_GUI);
+            minecraft->textures->bindTexture(&guiTexture);
+
+			glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+			// hotbar pos
+            const int hotbarX = iWidthOffset + (screenWidth - quickSelectWidth) / 2;
+            const int hotbarY = iHeightOffset + screenHeight - iSafezoneYHalf - iTooltipsYOffset;
+			
+			const auto previousBlitOffset = blitOffset;
+            blitOffset = -90;
+
+			// draw hotbar BG
+            blit(hotbarX, hotbarY, 0, 0, 182, 22);
+            blitOffset = previousBlitOffset;
+
+			// draw the selected hb slot 
+			const int selectedSlot = minecraft->player->inventory->selected;
+            blit(hotbarX - 1 + selectedSlot * 20, hotbarY - 1, 0, 22, 24, 22);
+
+			// TU0 accurate health, armour and air bars
+			if (minecraft->gameMode->canHurtPlayer())
+			{
+                static ResourceLocation iconsTexture(TN_GUI_ICONS);
+                minecraft->textures->bindTexture(&iconsTexture);
+
+				glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+				const auto oldOffset = blitOffset;
+                blitOffset = -90;
+
+				// pos relative to hotbar
+                const int heartX = hotbarX;
+                const int heartY = hotbarY - 10;
+                const int armorX = hotbarX + 182;
+                const int airY = heartY - 9;
+
+				// health bar
+                const int health = minecraft->player->getHealth();
+                const int lastHealth = minecraft->player->lastHealth;
+
+				bool blink = minecraft->player->invulnerableTime / 3 % 2 == 1;
+				if (minecraft->player->invulnerableTime < 10)
+				{
+                    blink = false;
+				}
+				for (int i = 0; i < 10; i++)
+				{
+                    const int x = heartX + i * 8;
+                    const int y = heartY;
+                    const int background = blink ? 1 : 0;
+
+					// empty heart BG
+                    blit(x, y, 16 + background * 9, 0, 9, 9);
+
+					// prev health flashes
+					if (blink)
+					{
+                        if (i * 2 + 1 < lastHealth) blit(x, y, 16 + 6 * 9, 0, 9, 9);
+
+						if (i * 2 + 1 == lastHealth) blit(x, y, 16 + 7 * 9, 0, 9, 9);
+					}
+
+					// current health
+                    if (i * 2 + 1 < health) blit(x, y, 16 + 4 * 9, 0, 9, 9);
+
+					if (i * 2 + 1 == health) blit(x, y, 16 + 5 * 9, 0, 9, 9);
+				}
+
+				// armor bar
+                const int armor = minecraft->player->getArmorValue();
+
+				if (armor > 0)
+				{
+					for (int i = 0; i < 10; i++)
+					{
+                        const int x = armorX - i * 8 - 9;
+                        const int y = heartY;
+
+						if (i * 2 + 1 < armor)
+						{
+							// full armor
+                            blit(x, y, 16 + 2 * 9, 9, 9, 9);
+						}
+						else if (i * 2 + 1 == armor)
+						{
+							// half armor
+                            blit(x, y, 16 + 9, 9, 9, 9);
+						}
+						else
+						{
+							// no armor
+                            blit(x, y, 16, 9, 9, 9);
+						}
+					}
+				}
+
+				// bubbles!
+				if (minecraft->player->isUnderLiquid(Material::water))
+				{
+                    const int air = minecraft->player->getAirSupply();
+
+                    int full = static_cast<int>(ceil((air - 2) * 10.0f / Player::TOTAL_AIR_SUPPLY));
+                    int total = static_cast<int>(ceil(air * 10.0f / Player::TOTAL_AIR_SUPPLY));
+
+					// keep total number of bubbles in range
+                    if (full < 0) full = 0;
+                    if (full > 10) full = 10;
+
+					if (total < 0) total = 0;
+                    if (total > 10) total = 10;
+
+					for (int i = 0; i < total; i++)
+					{
+                        const int x = heartX + i * 8;
+						if (i < full)
+						{
+                            blit(x, airY, 16, 18, 9, 9);
+						}
+						else
+						{
+                            blit(x, airY, 25, 18, 9, 9);
+						}
+					}
+				}
+
+				blitOffset = oldOffset;
+			}
+
+			// render current items in the hotbar
+            glEnable(GL_RESCALE_NORMAL);
+            Lighting::turnOnGui();
+
+			for (int i = 0; i < 9; i++)
+			{
+				// item pos
+                const int itemX = hotbarX + 3 + i * 20;
+                const int itemY = hotbarY + 3;
+
+				// draw item, stack and durability
+                renderSlot(i, itemX, itemY, a);
+			}
+
+			Lighting::turnOff();
+            glDisable(GL_RESCALE_NORMAL);
+		}
+#endif
+
 		// 4J - do render of crouched player. This code is largely taken from the inventory render of the player, with some special hard-coded positions
 		// worked out by hand from the xui implementation of the crouch icon
 
