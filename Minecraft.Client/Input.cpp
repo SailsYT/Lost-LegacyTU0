@@ -11,6 +11,10 @@
 #include "Windows64/KeyboardMouseInput.h"
 #endif
 
+#ifdef _WINDOWS64
+bool g_Sprint = false;
+#endif
+
 Input::Input()
 {
 	xa = 0;

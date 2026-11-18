@@ -1,4 +1,8 @@
 #pragma once
+#ifdef _WINDOWS64
+extern bool g_Sprint;
+#endif
+
 class Player;
 
 class Input

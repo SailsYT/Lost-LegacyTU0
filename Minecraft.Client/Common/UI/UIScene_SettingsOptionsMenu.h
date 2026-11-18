@@ -14,14 +14,15 @@ private:
 		eControl_ShowMashUpWorlds,
 		eControl_Autosave,
 		eControl_Languages,
-		eControl_Difficulty
+		eControl_Difficulty,
+		eControl_Sprint
 	};
 protected:
 	static int m_iDifficultySettingA[4];
 	static int m_iDifficultyTitleSettingA[4];
 
 private:
-	UIControl_CheckBox m_checkboxViewBob, m_checkboxShowHints, m_checkboxShowTooltips, m_checkboxInGameGamertags, m_checkboxMashupWorlds; // Checkboxes
+	UIControl_CheckBox m_checkboxViewBob, m_checkboxShowHints, m_checkboxShowTooltips, m_checkboxInGameGamertags, m_checkboxMashupWorlds, m_checkboxSprint; // Checkboxes
 	UIControl_Slider m_sliderAutosave, m_sliderDifficulty; // Sliders
 	UIControl_Label m_labelDifficultyText; //Text
 	UIControl_Button m_buttonLanguageSelect;
@@ -36,6 +37,7 @@ private:
 		UI_MAP_ELEMENT( m_sliderDifficulty, "Difficulty")
 		UI_MAP_ELEMENT( m_labelDifficultyText, "DifficultyText")
 		UI_MAP_ELEMENT( m_buttonLanguageSelect, "Languages")
+        UI_MAP_ELEMENT(m_checkboxSprint, "Sprint")
 	UI_END_MAP_ELEMENTS_AND_NAMES()
 
 	bool m_bNotInGame;

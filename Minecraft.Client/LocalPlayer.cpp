@@ -224,6 +224,25 @@ void LocalPlayer::aiStep()
 	//input->tick( dynamic_pointer_cast<Player>( shared_from_this() ) );
 	// 4J-PB - make it a localplayer
 	input->tick( this );
+
+	#ifdef _WINDOWS64
+    const bool Sprint = g_Sprint;
+	#else
+	const bool Sprint = true;
+	#endif 
+
+	if (!Sprint)
+	{
+        sprintTriggerTime = 0;
+        sprintTriggerRegisteredReturn = false;
+        input->sprinting = false;
+
+		if (isSprinting())
+		{
+            setSprinting(false);
+		}
+	}
+
 	if (isUsingItem() && !isRiding())
 	{
 		input->xa *= 0.2f;
@@ -252,7 +271,7 @@ void LocalPlayer::aiStep()
 	bool forwardEnoughToContinueSprint = input->ya >= runTreshold;
 
 	// 4J - altered this slightly to make sure that the joypad returns to below returnTreshold in between registering two movements up to runThreshold
-	if (onGround && !isSprinting() && enoughFoodToSprint && !isUsingItem() && !hasEffect(MobEffect::blindness))
+	if (Sprint && onGround && !isSprinting() && enoughFoodToSprint && !isUsingItem() && !hasEffect(MobEffect::blindness))
 	{
 		if( !wasRunning && forwardEnoughToTriggerSprint )
 		{
@@ -278,14 +297,14 @@ void LocalPlayer::aiStep()
 	}
 	if (isSneaking()) sprintTriggerTime = 0;
 #ifdef _WINDOWS64
-	if (input->sprinting && !isSprinting() && onGround && enoughFoodToSprint && !isUsingItem() && !hasEffect(MobEffect::blindness) && !isSneaking())
+	if (Sprint && input->sprinting && !isSprinting() && onGround && enoughFoodToSprint && !isUsingItem() && !hasEffect(MobEffect::blindness) && !isSneaking())
 	{
 		setSprinting(true);
 	}
 #endif
 	// 4J-PB - try not stopping sprint on collision
 	//if (isSprinting() && (input->ya < runTreshold || horizontalCollision || !enoughFoodToSprint))
-	if (isSprinting() && (!forwardEnoughToContinueSprint || !enoughFoodToSprint || isSneaking() || isUsingItem()))
+	if (isSprinting() && (!Sprint || !forwardEnoughToContinueSprint || !enoughFoodToSprint || isSneaking() || isUsingItem()))
 	{
 		setSprinting(false);
 	}	
